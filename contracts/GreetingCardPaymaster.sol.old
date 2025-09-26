@@ -1,0 +1,137 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./GreetingCardNFT.sol";
+
+contract GreetingCardPaymaster is Ownable {
+    // USDC token contract address
+    IERC20 public immutable usdcToken;
+    
+    // GreetingCardNFT contract address
+    GreetingCardNFT public immutable nftContract;
+    
+    // USDC price per NFT (in USDC with 6 decimals)
+    uint256 public constant USDC_MINT_PRICE = 5 * 10**6; // $5 USDC
+    
+    // Events
+    event USDCSponsored(address indexed user, uint256 usdcAmount);
+    event PaymasterDeposited(uint256 amount);
+    event PaymasterWithdrawn(uint256 amount);
+    
+    constructor(
+        IERC20 _usdcToken,
+        GreetingCardNFT _nftContract,
+        address _owner
+    ) Ownable(_owner) {
+        usdcToken = _usdcToken;
+        nftContract = _nftContract;
+    }
+    
+    /**
+     * @dev Mint NFT with USDC payment (simplified version)
+     * This function handles the USDC payment and mints the NFT
+     */
+    function mintWithUSDC(
+        string memory uri,
+        address recipient,
+        uint256 usdcAmount
+    ) external returns (uint256) {
+        // Validate USDC amount
+        require(usdcAmount >= USDC_MINT_PRICE, "Insufficient USDC amount");
+        
+        // Check if user has enough USDC
+        require(
+            usdcToken.balanceOf(msg.sender) >= usdcAmount,
+            "Insufficient USDC balance"
+        );
+        
+        // Check USDC allowance
+        require(
+            usdcToken.allowance(msg.sender, address(this)) >= usdcAmount,
+            "Insufficient USDC allowance"
+        );
+        
+        // Transfer USDC from user to paymaster
+        require(
+            usdcToken.transferFrom(msg.sender, address(this), usdcAmount),
+            "USDC transfer failed"
+        );
+        
+        // Mint NFT
+        uint256 tokenId = nftContract.mintWithUSDC(uri, recipient, usdcAmount);
+        
+        emit USDCSponsored(msg.sender, usdcAmount);
+        
+        return tokenId;
+    }
+    
+    /**
+     * @dev Batch mint NFTs with USDC payment
+     */
+    function batchMintWithUSDC(
+        string[] memory tokenURIs,
+        address recipient,
+        uint256 totalUsdcAmount
+    ) external returns (uint256[] memory) {
+        uint256 expectedAmount = USDC_MINT_PRICE * tokenURIs.length;
+        require(totalUsdcAmount >= expectedAmount, "Insufficient USDC amount");
+        
+        // Check if user has enough USDC
+        require(
+            usdcToken.balanceOf(msg.sender) >= totalUsdcAmount,
+            "Insufficient USDC balance"
+        );
+        
+        // Check USDC allowance
+        require(
+            usdcToken.allowance(msg.sender, address(this)) >= totalUsdcAmount,
+            "Insufficient USDC allowance"
+        );
+        
+        // Transfer USDC from user to paymaster
+        require(
+            usdcToken.transferFrom(msg.sender, address(this), totalUsdcAmount),
+            "USDC transfer failed"
+        );
+        
+        // Batch mint NFTs
+        uint256[] memory tokenIds = nftContract.batchMintWithUSDC(tokenURIs, recipient, totalUsdcAmount);
+        
+        emit USDCSponsored(msg.sender, totalUsdcAmount);
+        
+        return tokenIds;
+    }
+    
+    /**
+     * @dev Withdraw USDC collected from users
+     */
+    function withdrawUSDC(uint256 amount) external onlyOwner {
+        require(usdcToken.transfer(owner(), amount), "USDC transfer failed");
+    }
+    
+    /**
+     * @dev Get the paymaster's USDC balance
+     */
+    function getUSDCBalance() external view returns (uint256) {
+        return usdcToken.balanceOf(address(this));
+    }
+    
+    /**
+     * @dev Get the paymaster's ETH balance
+     */
+    function getETHBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+    
+    /**
+     * @dev Withdraw ETH from the paymaster
+     */
+    function withdrawETH(uint256 amount) external onlyOwner {
+        require(address(this).balance >= amount, "Insufficient ETH balance");
+        (bool success, ) = payable(owner()).call{value: amount}("");
+        require(success, "ETH transfer failed");
+        emit PaymasterWithdrawn(amount);
+    }
+}

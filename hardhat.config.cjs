@@ -1,11 +1,9 @@
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox-viem";
-import "@nomicfoundation/hardhat-verify";
-import * as dotenv from "dotenv";
+require("@nomicfoundation/hardhat-ethers");
+require("@nomicfoundation/hardhat-verify");
+require("dotenv").config();
 
-dotenv.config();
-
-const config: HardhatUserConfig = {
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
   solidity: {
     version: "0.8.20",
     settings: {
@@ -17,33 +15,18 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      type: "edr-simulated",
-      chainType: "l1",
-    },
-    hardhatMainnet: {
-      type: "edr-simulated",
-      chainType: "l1",
-    },
-    hardhatOp: {
-      type: "edr-simulated",
-      chainType: "op",
+      chainId: 31337,
     },
     sepolia: {
-      type: "http",
-      chainType: "l1",
       url: process.env.SEPOLIA_RPC_URL || "https://sepolia.infura.io/v3/your-project-id",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
     base: {
-      type: "http",
-      chainType: "l1",
       url: process.env.BASE_RPC_URL || "https://mainnet.base.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 8453,
     },
     baseSepolia: {
-      type: "http",
-      chainType: "l1",
       url: process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 84532,
@@ -74,5 +57,3 @@ const config: HardhatUserConfig = {
     ],
   },
 };
-
-export default config;

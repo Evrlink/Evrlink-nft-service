@@ -5,9 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test",
+    "test:paymaster": "npx hardhat test test/GreetingCardPaymaster.test.ts",
     "compile": "npx hardhat compile",
     "deploy:base-sepolia": "npx hardhat run scripts/deploy.ts --network baseSepolia",
     "deploy:base": "npx hardhat run scripts/deploy.ts --network base",
+    "deploy:paymaster:base-sepolia": "npx hardhat run scripts/deploy-paymaster.ts --network baseSepolia",
+    "deploy:paymaster:base": "npx hardhat run scripts/deploy-paymaster.ts --network base",
     "mint": "npx hardhat run scripts/mint.ts",
     "verify": "npx hardhat run scripts/verify.ts"
   },
@@ -22,23 +25,16 @@
   "license": "MIT",
   "type": "module",
   "devDependencies": {
-    "@nomicfoundation/hardhat-ignition": "^3.0.2",
-    "@nomicfoundation/hardhat-ignition-viem": "^3.0.2",
-    "@nomicfoundation/hardhat-keystore": "^3.0.1",
-    "@nomicfoundation/hardhat-network-helpers": "^3.0.0",
-    "@nomicfoundation/hardhat-node-test-runner": "^3.0.2",
-    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
-    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.0",
-    "@nomicfoundation/hardhat-verify": "^3.0.1",
-    "@nomicfoundation/hardhat-viem": "^3.0.0",
-    "@nomicfoundation/hardhat-viem-assertions": "^3.0.1",
-    "@types/node": "^22.18.0",
+    "@nomicfoundation/hardhat-ethers": "^3.1.0",
+    "@nomicfoundation/hardhat-verify": "^2.1.1",
+    "@types/node": "^22.18.1",
     "chai": "^4.5.0",
     "dotenv": "^17.2.2",
+    "ethers": "^6.15.0",
     "forge-std": "github:foundry-rs/forge-std#v1.9.4",
-    "hardhat": "^3.0.4",
-    "typescript": "~5.8.0",
-    "viem": "^2.37.2"
+    "hardhat": "^2.26.3",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.8"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.4.0"

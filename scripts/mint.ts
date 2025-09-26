@@ -1,30 +1,36 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import pkg from "hardhat";
+const { ethers } = pkg;
 
-async function main(hre: HardhatRuntimeEnvironment) {
-  const { viem } = await hre.network.connect();
-  
-  // Contract address (after deployment)
-  const contractAddress = "YOUR_DEPLOYED_CONTRACT_ADDRESS";
-  const GreetingCardNFT = await viem.getContractFactory("GreetingCardNFT");
-  const contract = GreetingCardNFT.attach(contractAddress);
-  
-  // IPFS metadata URI (from your frontend)
-  const tokenURI = "ipfs://QmYourMetadataHash";
-  
-  // Mint price
-  const mintPrice = viem.parseEther("0.02");
-  
+const DEFAULT_CONTRACT_ADDRESS = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+const DEFAULT_TOKEN_URI = "ipfs://QmYourMetadataHash";
+
+async function main() {
+  const contractAddress = process.env.CONTRACT_ADDRESS ?? DEFAULT_CONTRACT_ADDRESS;
+  if (!ethers.isAddress(contractAddress)) {
+    throw new Error(`Invalid contract address: ${contractAddress}`);
+  }
+
+  const [signer] = await ethers.getSigners();
+  const contract = await ethers.getContractAt("GreetingCardNFT", contractAddress, signer);
+
+  const tokenURI = process.env.TOKEN_URI ?? DEFAULT_TOKEN_URI;
+  const mintPrice = await contract.MINT_PRICE();
+
   console.log("Minting greeting card...");
   console.log("Token URI:", tokenURI);
-  console.log("Mint price:", viem.formatEther(mintPrice), "ETH");
-  
-  const tx = await contract.write.mintGreetingCard([tokenURI, contractAddress], {
+  console.log("Recipient:", signer.address);
+  console.log("Mint price:", ethers.formatEther(mintPrice), "ETH");
+
+  const tx = await contract.mintGreetingCard(tokenURI, signer.address, {
     value: mintPrice,
   });
-  
-  await tx.wait();
+
+  const receipt = await tx.wait();
   console.log("Greeting card minted successfully!");
-  console.log("Transaction hash:", tx.hash);
+  console.log("Transaction hash:", receipt?.hash ?? tx.hash);
 }
 
-export default main;
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
