@@ -1,33 +1,53 @@
 import pkg from "hardhat";
 const { ethers } = pkg;
 
-const DEFAULT_CONTRACT_ADDRESS = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
-const DEFAULT_TOKEN_URI = "ipfs://QmYourMetadataHash";
+import { mintGreetingCard } from "./lib/mint-greeting-card.ts";
 
-async function main() {
-  const contractAddress = process.env.CONTRACT_ADDRESS ?? DEFAULT_CONTRACT_ADDRESS;
-  if (!ethers.isAddress(contractAddress)) {
-    throw new Error(`Invalid contract address: ${contractAddress}`);
-  }
+const DEFAULT_CONTRACT_ADDRESS = "0x9c351AAF8FC2187eD32f11428b3B0a3d8BAD04dc";
+const DEFAULT_TOKEN_URI = "https://amaranth-quiet-dragonfly-382.mypinata.cloud/ipfs/bafkreicdn7r5lwfcec7pmec7hdy4lxd2b7rtqpnr2y4ronc2kee6xqan24";
+
+export interface RunMintOptions {
+  contractAddress?: string;
+  tokenURI?: string;
+  recipient?: string;
+}
+
+export async function runMint({
+  contractAddress: providedAddress,
+  tokenURI: providedTokenURI,
+  recipient: providedRecipient,
+}: RunMintOptions = {}) {
+  const contractAddress = providedAddress ?? process.env.CONTRACT_ADDRESS ?? DEFAULT_CONTRACT_ADDRESS;
+  const tokenURI = providedTokenURI ?? process.env.TOKEN_URI ?? DEFAULT_TOKEN_URI;
 
   const [signer] = await ethers.getSigners();
-  const contract = await ethers.getContractAt("GreetingCardNFT", contractAddress, signer);
-
-  const tokenURI = process.env.TOKEN_URI ?? DEFAULT_TOKEN_URI;
-  const mintPrice = await contract.MINT_PRICE();
+  const recipient = providedRecipient ?? signer.address;
 
   console.log("Minting greeting card...");
+  console.log("Contract:", contractAddress);
+  console.log("Recipient:", recipient);
   console.log("Token URI:", tokenURI);
-  console.log("Recipient:", signer.address);
-  console.log("Mint price:", ethers.formatEther(mintPrice), "ETH");
 
-  const tx = await contract.mintGreetingCard(tokenURI, signer.address, {
-    value: mintPrice,
+  const result = await mintGreetingCard({
+    contractAddress,
+    tokenURI,
+    recipient,
+    signer,
   });
 
-  const receipt = await tx.wait();
+  console.log("Mint price:", ethers.formatEther(result.mintPrice), "ETH");
   console.log("Greeting card minted successfully!");
-  console.log("Transaction hash:", receipt?.hash ?? tx.hash);
+  console.log("Transaction hash:", result.transactionHash);
+
+  if (result.tokenId !== undefined) {
+    console.log("Token ID:", result.tokenId.toString());
+  }
+
+  return result;
+}
+
+async function main() {
+  await runMint();
 }
 
 main().catch((error) => {

@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract GreetingCardNFT is ERC721, ERC721URIStorage, Ownable {
     uint256 private _tokenIds;
     
-    // Minting price (0.02 ETH)
-    uint256 public constant MINT_PRICE = 0.02 ether;
+    // Minting price (0.0002 ETH)
+    uint256 public constant MINT_PRICE = 0.0002 ether;
     
     // Maximum supply
     uint256 public constant MAX_SUPPLY = 10000;
