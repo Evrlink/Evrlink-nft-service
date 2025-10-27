@@ -3,7 +3,7 @@ const { ethers } = pkg;
 
 import { mintGreetingCard } from "./lib/mint-greeting-card.ts";
 
-const DEFAULT_CONTRACT_ADDRESS = "0x9c351AAF8FC2187eD32f11428b3B0a3d8BAD04dc";
+const DEFAULT_CONTRACT_ADDRESS = "0xF2Cf287F29B945A622Ef41189cfF278f88934a37";
 const DEFAULT_TOKEN_URI = "https://amaranth-quiet-dragonfly-382.mypinata.cloud/ipfs/bafkreicdn7r5lwfcec7pmec7hdy4lxd2b7rtqpnr2y4ronc2kee6xqan24";
 
 export interface RunMintOptions {

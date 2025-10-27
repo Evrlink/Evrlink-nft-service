@@ -7,6 +7,7 @@ import { mintGreetingCard } from "./lib/mint-greeting-card.ts";
 loadEnv();
 
 const listenPort = Number(process.env.MINT_API_PORT ?? 8787);
+const listenHost = process.env.MINT_API_HOST ?? "0.0.0.0";
 const apiKey = process.env.MINT_API_KEY;
 const contractAddressEnv = process.env.CONTRACT_ADDRESS;
 
@@ -126,6 +127,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(listenPort, () => {
-  console.log(`Mint API listening on http://localhost:${listenPort}/mint`);
+server.listen(listenPort, listenHost, () => {
+  console.log(`Mint API listening on http://${listenHost}:${listenPort}/mint`);
 });
